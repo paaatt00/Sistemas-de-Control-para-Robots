@@ -14,8 +14,8 @@
 % near max range. Set the grid map resolution to 20 cells per meter, which gives 
 % a 5cm precision. 
 
-maxLidarRange = ... ;
-mapResolution = ... ;
+maxLidarRange = 8 ;
+mapResolution = 20 ;
 slamAlg = robotics.LidarSLAM(mapResolution, maxLidarRange)
 %% 
 % The loop closure parameters are set empirically. Using a higher loop closure 
@@ -26,8 +26,8 @@ slamAlg = robotics.LidarSLAM(mapResolution, maxLidarRange)
 % allows the algorithm to search a wider range of the map around the current pose 
 % estimate for loop closures.
 
-slamAlg.LoopClosureThreshold = ... ;
-slamAlg.LoopClosureSearchRadius = ... ;
+slamAlg.LoopClosureThreshold = 200 ;
+slamAlg.LoopClosureSearchRadius = 3 ;
 %% Observe the Effect of Loop Closure and Optimization Process
 % Create a loop to map the environment while localizing the robot (SLAM process). 
 % The robot position is updated in the loop from the lidar scans. The scans are 
@@ -51,10 +51,10 @@ firstLoopClosure = false;
 figure
 while (1)
     % Read the laser message
-    ...
+    msg_laser = sub_laser.LatestMessage;
         
     % Create lidarScan object from scan message
-    scans= ... ;
+    scans = lidarScan(msg_laser);
       
     [isScanAccepted, loopClosureInfo, optimizationInfo] = addScan(slamAlg, scans);
     if isScanAccepted
@@ -107,4 +107,4 @@ title('Occupancy Grid Map Built Using Lidar SLAM');
 %% 
 % Save map in a .mat file 
 
-...
+save mapa_SLAM.mat map

@@ -1,3 +1,3 @@
 clc; clear all; close all;
 
-rosinit('http://172.29.30.173:11311', 'NodeHost', '172.29.29.93');
+rosinit('http://192.168.0.34:11311', 'NodeHost', '192.168.0.32');

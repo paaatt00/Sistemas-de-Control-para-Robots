@@ -54,7 +54,7 @@ while (1)
     msg_laser = sub_laser.LatestMessage;
         
     % Create lidarScan object from scan message
-    scans= lidarScan(msg_laser);
+    scans = lidarScan(msg_laser);
       
     [isScanAccepted, loopClosureInfo, optimizationInfo] = addScan(slamAlg, scans);
     if isScanAccepted
