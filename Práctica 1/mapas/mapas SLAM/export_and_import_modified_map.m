@@ -4,11 +4,12 @@
 
 clear all
 close all
+clc
 
 %%%%%%%%
 % PASO 1
 % CARGAR EL MAPA
-load rooms_slam.mat 
+load pasillo_SLAM.mat 
 
 fig = figure(1)
 show(map)
@@ -36,7 +37,7 @@ axis('on')
 % PASO 3
 % CARGAR LA IMAGEN LIMPIADA 
 
-image = imread('map_limpio.png');
+image = imread('map_original.png');
 
 % Unknown areas (gray) should be removed and treated as free space. Create
 % a logical matrix based on a threshold. Depending on your image, this value
