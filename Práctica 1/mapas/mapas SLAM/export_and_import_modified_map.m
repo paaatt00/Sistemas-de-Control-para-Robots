@@ -9,7 +9,7 @@ clc
 %%%%%%%%
 % PASO 1
 % CARGAR EL MAPA
-load pasillo_SLAM.mat 
+load pasillo_profe_SLAM.mat 
 
 fig = figure(1)
 show(map)
