@@ -49,7 +49,7 @@
 % Mapping With Known Poses> for a more detailed explanation.
 
 load simple_rooms_modified.mat;
-map = simple_rooms_modified.mat;
+map = map_modified;
 show(map);
 %% Setup the laser sensor model and amigobot motion model
 % AmigoBot can be modeled as a differential drive robot and its motion can be 
@@ -89,8 +89,8 @@ rangeFinderModel.Map = map;
 % Query the Transformation Tree (tf tree) in ROS.
 tftree = rostf;
 %Obtener transformada entre los frames del robot y del sensor_laser
-waitForTransform(tftree,'/robot0/','/robot0_laser_1');
-sensorTransform = getTransform(tftree,'/robot0/', '/robot0_laser_1');
+waitForTransform(tftree,'/robot0','/robot0_laser_1');
+sensorTransform = getTransform(tftree,'/robot0', '/robot0_laser_1');
 
 % Get the euler rotation angles.
 laserQuat = [sensorTransform.Transform.Rotation.W sensorTransform.Transform.Rotation.X ...
@@ -100,8 +100,7 @@ laserRotation = quat2eul(laserQuat, 'ZYX');
 % Setup the |SensorPose|, which includes the translation along base_link's
 % +X, +Y direction in meters and rotation angle along base_link's +Z axis
 % in radians.
-rangeFinderModel.SensorPose = ...
-    [sensorTransform.Transform.Translation.X sensorTransform.Transform.Translation.Y laserRotation(1)];
+rangeFinderModel.SensorPose = [sensorTransform.Transform.Translation.X sensorTransform.Transform.Translation.Y laserRotation(1)];
 %% Interface for receiving sensor measurements from AmigoBot and sending velocity commands to AmigoBot.
 % Create ROS subscribers for retrieving sensor and odometry measurements from 
 % TurtleBot. sub_laser = rossubscriber('scan'); sub_odom = rossubscriber('odom');
@@ -161,7 +160,7 @@ amcl.ResamplingInterval = 1;
 amcl.ParticleLimits = [500 50000];           % Minimum and maximum number of particles
 amcl.GlobalLocalization = true;      % global = true      local=false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
-amcl.InitialCovariance = diag([1 1 1])*0,5;  %Covariance of initial pose (eye(3) es lo mismo)
+amcl.InitialCovariance = eye(3)*0.5;  %Covariance of initial pose (eye(3) es lo mismo)
 %% Setup helper for visualization and driving AmigoBot.
 % Setup ExampleHelperAMCLVisualization to plot the map and update robot's estimated 
 % pose, particles, and laser scan readings on the map.
@@ -210,7 +209,7 @@ while (1)
     
     % Plot the robot's estimated pose, particles and laser scans on the map.
     if isUpdated
-        i = i + 1
+        i = i + 1;
         plotStep(visualizationHelper, amcl, estimatedPose, scans, i)
     end
     
