@@ -48,7 +48,8 @@
 % or real. Refer to <docid:robotics_examples.example-MappingWithKnownPosesExample 
 % Mapping With Known Poses> for a more detailed explanation.
 
-load mapa_con_OnlineSLAM_Simulator.mat
+load simple_rooms_modified.mat;
+map = simple_rooms_modified.mat;
 show(map);
 %% Setup the laser sensor model and amigobot motion model
 % AmigoBot can be modeled as a differential drive robot and its motion can be 
@@ -88,8 +89,8 @@ rangeFinderModel.Map = map;
 % Query the Transformation Tree (tf tree) in ROS.
 tftree = rostf;
 %Obtener transformada entre los frames del robot y del sensor_laser
-waitForTransform(tftree,'...','...');
-sensorTransform = getTransform(tftree,'...', '...');
+waitForTransform(tftree,'/robot0/','/robot0_laser_1');
+sensorTransform = getTransform(tftree,'/robot0/', '/robot0_laser_1');
 
 % Get the euler rotation angles.
 laserQuat = [sensorTransform.Transform.Rotation.W sensorTransform.Transform.Rotation.X ...
@@ -157,10 +158,10 @@ amcl.ResamplingInterval = 1;
 % Please refer to section *Configure AMCL object for global localization* for 
 % an example on using global localization.
 
-amcl.ParticleLimits = ...;           % Minimum and maximum number of particles
-amcl.GlobalLocalization = ....;      % global = true      local=false
-amcl.InitialPose = ...;              % Initial pose of vehicle   
-amcl.InitialCovariance = diag([1 1 1])*...; % Covariance of initial pose
+amcl.ParticleLimits = [500 50000];           % Minimum and maximum number of particles
+amcl.GlobalLocalization = true;      % global = true      local=false
+amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
+amcl.InitialCovariance = diag([1 1 1])*0,5;  %Covariance of initial pose (eye(3) es lo mismo)
 %% Setup helper for visualization and driving AmigoBot.
 % Setup ExampleHelperAMCLVisualization to plot the map and update robot's estimated 
 % pose, particles, and laser scan readings on the map.
