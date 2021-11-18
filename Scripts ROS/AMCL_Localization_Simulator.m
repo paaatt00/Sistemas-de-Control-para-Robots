@@ -50,7 +50,7 @@
 
 load simple_rooms_modified.mat;
 map = map_modified;
-show(map);
+% show(map);
 %% Setup the laser sensor model and amigobot motion model
 % AmigoBot can be modeled as a differential drive robot and its motion can be 
 % estimated using odometry data. The |Noise| property defines the uncertainty 
