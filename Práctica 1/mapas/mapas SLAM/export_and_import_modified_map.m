@@ -9,7 +9,8 @@ clc
 %%%%%%%%
 % PASO 1
 % CARGAR EL MAPA
-load pasillo_profe_SLAM.mat 
+load pasillo_modified.mat 
+% map = map_modified;
 
 fig = figure(1)
 show(map)
@@ -20,7 +21,7 @@ ylabel('')
 xlabel('')
 
 %GUARDAR EL MAPA COMO IMAGEN
-imwrite((1.-map.occupancyMatrix),'map_original.png')
+imwrite((1.-map.occupancyMatrix),'pasillo_original.png')
 
 axis('on')
 
@@ -37,7 +38,7 @@ axis('on')
 % PASO 3
 % CARGAR LA IMAGEN LIMPIADA 
 
-image = imread('map_original.png');
+image = imread('pasillo_pintao.png');
 
 % Unknown areas (gray) should be removed and treated as free space. Create
 % a logical matrix based on a threshold. Depending on your image, this value
