@@ -50,7 +50,7 @@
 
 load pasillo_profe_modified;
 map = map_modified;
-% show(map);
+show(map);
 %% Setup the laser sensor model and amigobot motion model
 % AmigoBot can be modeled as a differential drive robot and its motion can be 
 % estimated using odometry data. The |Noise| property defines the uncertainty 
@@ -156,10 +156,10 @@ amcl.ResamplingInterval = 1;
 % Please refer to section *Configure AMCL object for global localization* for 
 % an example on using global localization.
 
-amcl.ParticleLimits = [500 50000];           % Minimum and maximum number of particles
-amcl.GlobalLocalization = true;      % global = true      local=false
+amcl.ParticleLimits = [500 50000];       % Minimum and maximum number of particles
+amcl.GlobalLocalization = true;          % global = true      local=false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
-amcl.InitialCovariance =eye(3)*0.5; % Covariance of initial pose
+amcl.InitialCovariance = eye(3)*0.5;      % Covariance of initial pose
 %% Setup helper for visualization and driving AmigoBot.
 % Setup ExampleHelperAMCLVisualization to plot the map and update robot's estimated 
 % pose, particles, and laser scan readings on the map.

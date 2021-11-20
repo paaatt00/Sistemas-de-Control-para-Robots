@@ -26,8 +26,8 @@ pause(1);
 % que, en función de la posición inicial del robot dentro del entorno, el mapa 
 % a obtener quepa bien dentro de la rejilla: 
 
-...
-...
+map = robotics.OccupancyGrid(25, 25, 20);
+map.GridLocationInWorld = [-5 -10];    
 %% 
 % Visualizamos el mapa en una figura:
 
@@ -66,7 +66,7 @@ while(1)
     % Para ello, rellenar correctamente los valores 'target_frame' y
     % 'source_frame' con los nombres correctos de los frames en la
     % siguiente llamada
-    pose = getTransform(tftree, '...', '...', msg_laser.Header.Stamp, 'Timeout', 2);
+    pose = getTransform(tftree, 'odom', 'base_link', msg_laser.Header.Stamp, 'Timeout', 2);
     
     % Convierte la posición del robot a vector [x y yaw]
     position = [pose.Transform.Translation.X, pose.Transform.Translation.Y];
@@ -75,13 +75,13 @@ while(1)
     robotPose = [position, orientation(1)];
     
     % Extraer los rangos y los ángulos del mensaje del láser.
-    ranges = ...
-    angles = ...
+    ranges = msg_laser.Ranges;
+    angles = msg_laser.readScanAngles;
     ranges(isinf(ranges)) = 8;  %Eliminar datos infinitos
     
     % Insertar la medida del laser en el mapa utilizando 'insertRay',
     % pasandole los datos apropiados obtenidos anteriormente
-    insertRay(...);  %Es un método de la clase OccupancyGrid. Consular la ayuda.
+    insertRay(map, robotPose, ranges, angles, 8);  %Es un método de la clase OccupancyGrid. Consular la ayuda.
     
     % Visualizamos el mapa cada 50 actualizaciones.
     if ~mod(updateCounter,50)
