@@ -200,7 +200,7 @@ while (1)
     
     % Update estimated robot's pose and covariance using new odometry and
     % sensor readings.
-    [isUpdated,estimatedPose, estimatedCovariance] = amcl(pose, scans);
+    [isUpdated, estimatedPose, estimatedCovariance] = amcl(pose, scans);
     
     % Drive robot to next pose.
     %wander(wanderHelper);

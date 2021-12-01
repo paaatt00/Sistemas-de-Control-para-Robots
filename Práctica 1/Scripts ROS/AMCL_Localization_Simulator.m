@@ -181,7 +181,7 @@ visualizationHelper = ExampleHelperAMCLVisualization(map);
 % AMCL updates. If the robot doesn't converge to the correct robot pose, consider 
 % using a larger |numUpdates|.
 
-i=1;
+i = 1;
 while (1)
     % Receive laser scan and odometry message.
     scan = receive(sub_laser);
@@ -200,17 +200,17 @@ while (1)
     
     % Update estimated robot's pose and covariance using new odometry and
     % sensor readings.
-    [isUpdated,estimatedPose, estimatedCovariance] = amcl(pose, scans);
-    
+    [isUpdated, estimatedPose, estimatedCovariance] = amcl(pose, scans);
+        
     % Drive robot to next pose.
-    %wander(wanderHelper);
+    % wander(wanderHelper);
     
     % Plot the robot's estimated pose, particles and laser scans on the map.
     if isUpdated
         i = i + 1;
         plotStep(visualizationHelper, amcl, estimatedPose, scans, i)
     end
-    
+
 end
 %% Stop the AmigoBot and shutdown ROS in MATLAB
 
