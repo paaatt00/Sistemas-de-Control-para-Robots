@@ -11,7 +11,7 @@ VFH = robotics.VectorFieldHistogram;
 VFH.NumAngularSectors = 180;
 VFH.DistanceLimits = [0.05 3];
 VFH.RobotRadius = 0.15; % 0.15
-VFH.SafetyDistance = 0.2; % 0.2
+VFH.SafetyDistance = 0.3; % 0.2
 VFH.MinTurningRadius = 0.1; % 0.1
 VFH.TargetDirectionWeight = 5; % 6
 VFH.CurrentDirectionWeight = 2; % 2
@@ -34,6 +34,7 @@ while(1)
     % leer y dibujar los datos del láser en la figura ‘fig_laser’
     figure(fig_laser)
     lee_sensores;
+    scans = lidarScan(msg_laser)
     
     % llamar al objeto VFH para obtener la dirección a seguir por el robot para
     % evitar los obstáculos. Mostrar los resultados del algoritmo (histogramas)

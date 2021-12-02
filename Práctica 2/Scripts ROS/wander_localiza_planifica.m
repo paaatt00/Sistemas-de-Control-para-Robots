@@ -58,7 +58,7 @@ amcl.ResamplingInterval = 1;
 
 % configure AMCL object for localization with initial pose estimate
 amcl.ParticleLimits = [500 50000];       % Minimum and maximum number of particles
-amcl.GlobalLocalization = true;          % global = true      local = false
+amcl.GlobalLocalization = false;          % global = true      local = false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3);         % Covariance of initial pose
 
@@ -117,9 +117,11 @@ while (1)
         plotStep(visualizationHelper, amcl, estimatedPose, scans, i)
     end
     
+    estimatedCovariance
+    
     % si la covarianza está por debajo de un umbral, el robot está 
     % localizado y finaliza el programa
-    if (estimatedCovariance(1,1) < 0.01 && estimatedCovariance(2,2) < 0.01 && estimatedCovariance(3,3) < 0.003) 
+    if (estimatedCovariance(1,1) < 0.02 && estimatedCovariance(2,2) < 0.02 && estimatedCovariance(3,3) < 0.03) % 0.01 0.01 0.003
         disp('Robot Localizado');
         break;
     end
@@ -146,4 +148,28 @@ while (1)
 
 end
 
-disp(estimatedPose);
+disp(estimatedPose)
+
+% definir posición de inicio y de destino
+startLocation = [estimatedPose(1,1) estimatedPose(1,2)];
+endLocation = [4 4];
+
+% paramos el robot, para que no avance mientras planificamos
+% hacemos una copia del mapa, para “inflarlo” antes de planificar
+msg_vel.Linear.X = 0;
+pub_vel = rospublisher('/robot0/cmd_vel', 'geometry_msgs/Twist');
+send(pub_vel, msg_vel);
+
+cpMap = copy(map);
+inflate(cpMap, 0.25);
+
+% crear el objeto PRM y ajustar sus parámetros
+planner = robotics.PRM(cpMap, 500);
+planner.ConnectionDistance = 0.3;
+
+% obtener la ruta hacia el destino desde la posición actual del robot y mostrarla
+% en una figura
+ruta = findpath(planner, startLocation, endLocation);
+
+figure;
+show(planner);
