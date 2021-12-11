@@ -58,7 +58,7 @@ amcl.ResamplingInterval = 1;
 
 % configure AMCL object for localization with initial pose estimate
 amcl.ParticleLimits = [500 50000];       % Minimum and maximum number of particles
-amcl.GlobalLocalization = false;          % global = true      local = false
+amcl.GlobalLocalization = true;          % global = true      local = false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3);         % Covariance of initial pose
 
@@ -77,6 +77,12 @@ VFH.CurrentDirectionWeight = 2; % 2
 VFH.PreviousDirectionWeight = 2; % 2
 VFH.HistogramThresholds = [3 10]; % [0.2 6]
 VFH.UseLidarScan = true; % para permitir utilizar la notación del scan
+
+% crear el objeto PurePursuit y ajustar sus propiedades
+controller = robotics.PurePursuit;
+controller.DesiredLinearVelocity = 0.1;
+controller.LookaheadDistance = 1; % 0.5
+controller.MaxAngularVelocity = 0.3;
 
 % rellenamos los campos por defecto de la velocidad del robot, para que la lineal sea siempre 0.1 m/s
 target_dir = 0;
@@ -121,7 +127,9 @@ while (1)
     
     % si la covarianza está por debajo de un umbral, el robot está 
     % localizado y finaliza el programa
-    if (estimatedCovariance(1,1) < 0.02 && estimatedCovariance(2,2) < 0.02 && estimatedCovariance(3,3) < 0.03) % 0.01 0.01 0.003
+    % global 0.03 0.02 0.03
+    % local 0.015 0.015 0.05
+    if (estimatedCovariance(1,1) < 0.015 && estimatedCovariance(2,2) < 0.015 && estimatedCovariance(3,3) < 0.05) 
         disp('Robot Localizado');
         break;
     end
@@ -155,10 +163,9 @@ pub_vel = rospublisher('/robot0/cmd_vel', 'geometry_msgs/Twist');
 send(pub_vel, msg_vel);
 
 disp(estimatedPose)
-
 % definir posición de inicio y de destino
-startLocation = [estimatedPose(1,1) estimatedPose(1,2)];
-endLocation = [0 0];s
+startLocation = [estimatedPose(1,1) estimatedPose(1,2)]
+endLocation = [0 0];
 
 cpMap = copy(map);
 inflate(cpMap, 0.25);
@@ -173,3 +180,61 @@ ruta = findpath(planner, startLocation, endLocation);
 
 figure;
 show(planner);
+
+%Indicamos al controlador la lista de waypoints a recorrer (ruta)
+controller.Waypoints = ruta;
+
+figure;
+cpMap = copy(map);
+inflate(cpMap, 0.25);
+
+while (1)
+    
+    % leer el láser y la odometría
+    lee_sensores;
+    
+    scan = receive(sub_laser);
+    odompose = sub_odom.LatestMessage;
+    scans = lidarScan(scan);
+    
+    % obtener la posición pose = [x,y,yaw] a partir de la odometría anterior
+    odomQuat = [odompose.Pose.Pose.Orientation.W, odompose.Pose.Pose.Orientation.X, odompose.Pose.Pose.Orientation.Y, odompose.Pose.Pose.Orientation.Z];
+    odomRotation = quat2eul(odomQuat);
+    pose = [odompose.Pose.Pose.Position.X, odompose.Pose.Pose.Position.Y, odomRotation(1)];
+    
+    % ejecutar amcl para obtener la posición estimada estimatedPose
+    [isUpdated, estimatedPose, estimatedCovariance] = amcl(pose, scans);
+    
+    % dibujar los resultados del localizador con el visualizationHelper
+    if isUpdated
+        i = i + 1;
+        plotStep(visualizationHelper, amcl, estimatedPose, scans, i)
+    end
+    
+    % ejecutar el controlador PurePursuit para obtener las velocidades
+    % lineal y angular
+    [lin_vel, ang_vel] = controller(estimatedPose);
+    
+    % rellenar los campos del mensaje de velocidad
+    msg_vel.Linear.X = lin_vel;
+    msg_vel.Angular.Z = ang_vel;
+    
+    % publicar el mensaje de velocidad
+    pub_vel = rospublisher('/robot0/cmd_vel', 'geometry_msgs/Twist');
+   	send(pub_vel, msg_vel);
+    
+    % comprobar si hemos llegado al destino, calculando la distancia 
+    % euclidea y estableciendo un umbral
+    if(estimatedPose(1,1) < 0.2 && estimatedPose(1,2) < 0.2)
+        disp('Navegación completada');
+        msg_vel.Linear.X = 0;
+        msg_vel.Angular.Z = 0;
+        pub_vel = rospublisher('/robot0/cmd_vel', 'geometry_msgs/Twist');
+        send(pub_vel, msg_vel);
+        break;
+    end
+    
+    % esperar al siguiente periodo de muestreo
+    waitfor(r);
+
+end
