@@ -223,9 +223,11 @@ while (1)
     pub_vel = rospublisher('/robot0/cmd_vel', 'geometry_msgs/Twist');
    	send(pub_vel, msg_vel);
     
+    estimatedPose
+    
     % comprobar si hemos llegado al destino, calculando la distancia 
     % euclidea y estableciendo un umbral
-    if(estimatedPose(1,1) < 0.2 && estimatedPose(1,2) < 0.2)
+    if (((endLocation(1,1) - 0.2) < estimatedPose(1,1) < (endLocation(1,1) + 0.2)) && ((endLocation(1,2) - 0.2) < estimatedPose(1,2) < ((endLocation(1,2) + 0.2))))
         disp('Navegación completada');
         msg_vel.Linear.X = 0;
         msg_vel.Angular.Z = 0;
