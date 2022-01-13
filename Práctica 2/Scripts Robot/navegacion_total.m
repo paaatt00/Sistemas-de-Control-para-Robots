@@ -63,7 +63,7 @@ amcl.ParticleLimits = [500 50000];       % Minimum and maximum number of particl
 %amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3);         % Covariance of initial pose
 
-amcl.GlobalLocalization = false;          % global = true      local = false
+amcl.GlobalLocalization = true;          % global = true      local = false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle 
 
 % setup helper for visualization and driving AmigoBot
@@ -71,9 +71,9 @@ visualizationHelper = ExampleHelperAMCLVisualization(map);
 
 % ajustamos sus propiedades
 VFH.NumAngularSectors = 180;
-VFH.DistanceLimits = [0.05 2];
-VFH.RobotRadius = 0.15; % 0.15
-VFH.SafetyDistance = 0.2; % 0.2
+VFH.DistanceLimits = [0.2 2];
+VFH.RobotRadius = 0.2; % 0.15
+VFH.SafetyDistance = 0.3; % 0.2
 VFH.MinTurningRadius = 0.1; % 0.1
 VFH.TargetDirectionWeight = 5; % 6
 VFH.CurrentDirectionWeight = 2; % 2
@@ -84,8 +84,8 @@ VFH.UseLidarScan = true; % para permitir utilizar la notación del scan
 % crear el objeto PurePursuit y ajustar sus propiedades
 controller = robotics.PurePursuit;
 controller.DesiredLinearVelocity = 0.1;
-controller.LookaheadDistance = 1; % 0.5
-controller.MaxAngularVelocity = 0.3;
+controller.LookaheadDistance = 3; % 0.5
+controller.MaxAngularVelocity = 0.5;
 
 % rellenamos los campos por defecto de la velocidad del robot, para que la lineal sea siempre 0.1 m/s
 target_dir = 0;
@@ -134,7 +134,7 @@ while (1)
     
     % si la covarianza está por debajo de un umbral, el robot está 
     % localizado y finaliza el programa
-    if (estimatedCovariance(1,1) < 0.06 && estimatedCovariance(2,2) < 0.06 && estimatedCovariance(3,3) < 0.7) 
+    if (estimatedCovariance(1,1) < 0.08 && estimatedCovariance(2,2) < 0.06 && estimatedCovariance(3,3) < 0.7) 
         disp('Robot Localizado');
         break;
     end
@@ -146,10 +146,10 @@ while (1)
     figure(fig_vfh);
     show(VFH);
     
-    % rellenar el campo de la velocidad angular del mensaje de velocidad con un
+    % rellenar el campo de la velocidad angul ar del mensaje de velocidad con un
     % valor proporcional a la dirección anterior (K = 0.1)
-    K = 0.1;
-    V_ang = K * steeringDir;
+    K = 0.5;
+    V_ang = K * steeringDir
     msg_vel.Angular.Z = V_ang;
     
     % publicar el mensaje de velocidad
@@ -162,15 +162,18 @@ end
 
 % paramos el robot, para que no avance mientras planificamos
 % hacemos una copia del mapa, para “inflarlo” antes de planificar
+msg_vel.Linear.X = 0;
+msg_vel.Angular.Z = 0;
+send(pub_vel, msg_vel);
 
 % desactivar motores enviando enable_motor = 0
-msg_enable_motor.Data = 0;
-send(pub_enable, msg_enable_motor);
+% msg_enable_motor.Data = 0;
+% send(pub_enable, msg_enable_motor);
 
 disp(estimatedPose)
 % definir posición de inicio y de destino
 startLocation = [estimatedPose(1,1) estimatedPose(1,2)]
-endLocation = [17 3];
+endLocation = [0 0]; %[17 3];
 
 cpMap = copy(map);
 inflate(cpMap, 0.25);
@@ -189,19 +192,22 @@ show(planner);
 % Indicamos al controlador la lista de waypoints a recorrer (ruta)
 controller.Waypoints = ruta;
 
-figure;
+figure(5);
 cpMap = copy(map);
 inflate(cpMap, 0.25);
+show(cpMap);
 
 % activar motores enviando enable_motor = 1
-msg_enable_motor.Data = 1;
-send(pub_enable, msg_enable_motor);
+% msg_enable_motor.Data = 1;
+% send(pub_enable, msg_enable_motor);
+msg_vel.Linear.X = 0.1;
+send(pub_vel, msg_vel);
 
 while (1)
     
     % leer el láser y la odometría
     figure(fig_laser)
-    lee_sensores;
+    % lee_sensores;
     
     scan = receive(sub_laser);
     odompose = sub_odom.LatestMessage;
@@ -227,8 +233,8 @@ while (1)
     
     % llamar a VFH pasándole como “targetDir” un valor proporcional a la
     % velocidad angular calculada por el PurePursuit
-    K1 = 0.8; 
-    K2 = 0.4; 
+    K1 = 1; 
+    K2 = 0.45; 
     targetdir = K1 * ang_vel;
     direccion = VFH(scans, targetdir);
     ang_vel_vfh = K2 * direccion;
@@ -238,6 +244,8 @@ while (1)
     
     % calcular la velocidad angular final como una combinación lineal de la
     % generada por el controlador PurePursuit y la generada por VFH
+    ang_vel
+    ang_vel_vfh
     ang_vel_tot = ang_vel + ang_vel_vfh
     
     % rellenar los campos del mensaje de velocidad
