@@ -72,19 +72,19 @@ visualizationHelper = ExampleHelperAMCLVisualization(map);
 % ajustamos sus propiedades
 VFH.NumAngularSectors = 180;
 VFH.DistanceLimits = [0.2 2];
-VFH.RobotRadius = 0.2; % 0.15
-VFH.SafetyDistance = 0.3; % 0.2
-VFH.MinTurningRadius = 0.1; % 0.1
-VFH.TargetDirectionWeight = 5; % 6
-VFH.CurrentDirectionWeight = 2; % 2
-VFH.PreviousDirectionWeight = 2; % 2
-VFH.HistogramThresholds = [3 10]; % [0.2 6]
+VFH.RobotRadius = 0.2; 
+VFH.SafetyDistance = 0.3; 
+VFH.MinTurningRadius = 0.1; 
+VFH.TargetDirectionWeight = 5; 
+VFH.CurrentDirectionWeight = 2; 
+VFH.PreviousDirectionWeight = 2; 
+VFH.HistogramThresholds = [3 10]; 
 VFH.UseLidarScan = true; % para permitir utilizar la notación del scan
 
 % crear el objeto PurePursuit y ajustar sus propiedades
 controller = robotics.PurePursuit;
 controller.DesiredLinearVelocity = 0.1;
-controller.LookaheadDistance = 3; % 0.5
+controller.LookaheadDistance = 3; 
 controller.MaxAngularVelocity = 0.5;
 
 % rellenamos los campos por defecto de la velocidad del robot, para que la lineal sea siempre 0.1 m/s
@@ -149,7 +149,7 @@ while (1)
     % rellenar el campo de la velocidad angul ar del mensaje de velocidad con un
     % valor proporcional a la dirección anterior (K = 0.1)
     K = 0.5;
-    V_ang = K * steeringDir
+    V_ang = K * steeringDir;
     msg_vel.Angular.Z = V_ang;
     
     % publicar el mensaje de velocidad
@@ -206,8 +206,8 @@ send(pub_vel, msg_vel);
 while (1)
     
     % leer el láser y la odometría
-    figure(fig_laser)
-    % lee_sensores;
+    figure(fig_laser);
+    lee_sensores;
     
     scan = receive(sub_laser);
     odompose = sub_odom.LatestMessage;
@@ -244,9 +244,7 @@ while (1)
     
     % calcular la velocidad angular final como una combinación lineal de la
     % generada por el controlador PurePursuit y la generada por VFH
-    ang_vel
-    ang_vel_vfh
-    ang_vel_tot = ang_vel + ang_vel_vfh
+    ang_vel_tot = ang_vel + ang_vel_vfh;
     
     % rellenar los campos del mensaje de velocidad
     msg_vel.Linear.X = lin_vel;
@@ -270,5 +268,4 @@ while (1)
     
     % esperar al siguiente periodo de muestreo
     waitfor(r);
-
 end

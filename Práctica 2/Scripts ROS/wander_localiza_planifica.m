@@ -58,7 +58,7 @@ amcl.ResamplingInterval = 1;
 
 % configure AMCL object for localization with initial pose estimate
 amcl.ParticleLimits = [500 50000];       % Minimum and maximum number of particles
-amcl.GlobalLocalization = false;          % global = true      local = false
+amcl.GlobalLocalization = true;          % global = true      local = false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3);         % Covariance of initial pose
 
@@ -158,7 +158,7 @@ disp(estimatedPose)
 
 % definir posición de inicio y de destino
 startLocation = [estimatedPose(1,1) estimatedPose(1,2)];
-endLocation = [0 0];s
+endLocation = [0 0];
 
 cpMap = copy(map);
 inflate(cpMap, 0.25);

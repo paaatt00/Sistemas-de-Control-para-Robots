@@ -59,7 +59,7 @@ amcl.ResamplingInterval = 1;
 
 % configure AMCL object for localization with initial pose estimate
 amcl.ParticleLimits = [500 50000];       % Minimum and maximum number of particles
-amcl.GlobalLocalization = false;          % global = true      local = false
+amcl.GlobalLocalization = true;          % global = true      local = false
 amcl.InitialPose = [0 0 0];              % Initial pose of vehicle   
 amcl.InitialCovariance = eye(3);         % Covariance of initial pose
 
@@ -69,20 +69,20 @@ visualizationHelper = ExampleHelperAMCLVisualization(map);
 
 % ajustamos sus propiedades
 VFH.NumAngularSectors = 180;
-VFH.DistanceLimits = [0.05 3];
-VFH.RobotRadius = 0.15; % 0.15
-VFH.SafetyDistance = 0.2; % 0.2
-VFH.MinTurningRadius = 0.1; % 0.1
-VFH.TargetDirectionWeight = 5; % 6
-VFH.CurrentDirectionWeight = 2; % 2
-VFH.PreviousDirectionWeight = 2; % 2
-VFH.HistogramThresholds = [3 10]; % [0.2 6]
+VFH.DistanceLimits = [0.2 3];
+VFH.RobotRadius = 0.15; 
+VFH.SafetyDistance = 0.3; 
+VFH.MinTurningRadius = 0.1; 
+VFH.TargetDirectionWeight = 5; 
+VFH.CurrentDirectionWeight = 2; 
+VFH.PreviousDirectionWeight = 2; 
+VFH.HistogramThresholds = [3 10]; 
 VFH.UseLidarScan = true; % para permitir utilizar la notación del scan
 
 % crear el objeto PurePursuit y ajustar sus propiedades
 controller = robotics.PurePursuit;
 controller.DesiredLinearVelocity = 0.1;
-controller.LookaheadDistance = 1; % 0.5
+controller.LookaheadDistance = 3; 
 controller.MaxAngularVelocity = 0.3;
 
 % rellenamos los campos por defecto de la velocidad del robot, para que la lineal sea siempre 0.1 m/s
@@ -165,7 +165,7 @@ send(pub_vel, msg_vel);
 disp(estimatedPose)
 % definir posición de inicio y de destino
 startLocation = [estimatedPose(1,1) estimatedPose(1,2)]
-endLocation = [17 3];
+endLocation = [17 3]; 
 
 cpMap = copy(map);
 inflate(cpMap, 0.25);
@@ -178,19 +178,21 @@ planner.ConnectionDistance = 2;
 % en una figura
 ruta = findpath(planner, startLocation, endLocation);
 
-figure(1);
+figure(4);
 show(planner);
 
 % Indicamos al controlador la lista de waypoints a recorrer (ruta)
 controller.Waypoints = ruta;
 
-figure(2);
+figure(5);
 cpMap = copy(map);
 inflate(cpMap, 0.25);
+show(cpMap);
 
 while (1)
     
     % leer el láser y la odometría
+    figure(fig_laser);
     lee_sensores;
     
     scan = receive(sub_laser);
@@ -220,10 +222,13 @@ while (1)
     % K1 = 0.1; % simple_rooms
     K1 = 1; % pasillo
     % K2 = 0.2; % simple_rooms
-    K2 = 1; % pasillo
+    K2 = 0.45; % pasillo
     targetdir = K1 * ang_vel;
     direccion = VFH(scans, targetdir);
     ang_vel_vfh = K2 * direccion;
+    
+    figure(fig_vfh);
+    show(VFH);
     
     % calcular la velocidad angular final como una combinación lineal de la
     % generada por el controlador PurePursuit y la generada por VFH

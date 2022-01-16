@@ -68,9 +68,9 @@ visualizationHelper = ExampleHelperAMCLVisualization(map);
 
 % ajustamos sus propiedades
 VFH.NumAngularSectors = 180;
-VFH.DistanceLimits = [0.05 3];
-VFH.RobotRadius = 0.15; % 0.15
-VFH.SafetyDistance = 0.2; % 0.2
+VFH.DistanceLimits = [0.2 2];
+VFH.RobotRadius = 0.2; % 0.15
+VFH.SafetyDistance = 0.3; % 0.2
 VFH.MinTurningRadius = 0.1; % 0.1
 VFH.TargetDirectionWeight = 5; % 6
 VFH.CurrentDirectionWeight = 2; % 2
@@ -81,7 +81,7 @@ VFH.UseLidarScan = true; % para permitir utilizar la notación del scan
 % crear el objeto PurePursuit y ajustar sus propiedades
 controller = robotics.PurePursuit;
 controller.DesiredLinearVelocity = 0.1;
-controller.LookaheadDistance = 1; % 0.5
+controller.LookaheadDistance = 3; % 0.5
 controller.MaxAngularVelocity = 0.3;
 
 % rellenamos los campos por defecto de la velocidad del robot, para que la lineal sea siempre 0.1 m/s
@@ -143,7 +143,7 @@ while (1)
     
     % rellenar el campo de la velocidad angular del mensaje de velocidad con un
     % valor proporcional a la dirección anterior (K = 0.1)
-    K = 0.1;
+    K = 0.3;
     V_ang = K * steeringDir;
     msg_vel.Angular.Z = V_ang;
     
@@ -178,19 +178,21 @@ planner.ConnectionDistance = 2;
 % en una figura
 ruta = findpath(planner, startLocation, endLocation);
 
-figure;
+figure(4);
 show(planner);
 
 %Indicamos al controlador la lista de waypoints a recorrer (ruta)
 controller.Waypoints = ruta;
 
-figure;
+figure(5);
 cpMap = copy(map);
 inflate(cpMap, 0.25);
+show(cpMap);
 
 while (1)
     
     % leer el láser y la odometría
+    figure(fig_laser)
     lee_sensores;
     
     scan = receive(sub_laser);
@@ -227,7 +229,8 @@ while (1)
     
     % comprobar si hemos llegado al destino, calculando la distancia 
     % euclidea y estableciendo un umbral
-    if (((endLocation(1,1) - 0.2) < estimatedPose(1,1) < (endLocation(1,1) + 0.2)) && ((endLocation(1,2) - 0.2) < estimatedPose(1,2) < ((endLocation(1,2) + 0.2))))
+    dist_euclidea = sqrt((endLocation(1,1) - (estimatedPose(1,1)))^2 + (endLocation(1,2) - (estimatedPose(1,2)))^2);
+    if (dist_euclidea < 0.2)        
         disp('Navegación completada');
         msg_vel.Linear.X = 0;
         msg_vel.Angular.Z = 0;
@@ -238,5 +241,4 @@ while (1)
     
     % esperar al siguiente periodo de muestreo
     waitfor(r);
-
 end

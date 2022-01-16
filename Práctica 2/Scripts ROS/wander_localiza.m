@@ -146,4 +146,9 @@ while (1)
 
 end
 
+% se detiene el robot en la posición estimada
+msg_vel.Linear.X = 0.0;
+send(pub_vel, msg_vel);
+
+% mostramos la posición estimada
 disp(estimatedPose);
